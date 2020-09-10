@@ -15,7 +15,7 @@ class net(nn.Module):
         super(net, self).__init__()
 
         # 1. Dummy
-        # 28x28 24x24 12x12 10x10 5x5
+        # 28x28 24x24 12x12 8x8 4x4
         self.conv1 = nn.Conv2d(1, 32, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(32, 64, 5)
