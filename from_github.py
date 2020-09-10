@@ -32,6 +32,7 @@ test_loader = torch.utils.data.DataLoader(
 print('==>>> total trainning batch number: {}'.format(len(train_loader)))
 print('==>>> total testing batch number: {}'.format(len(test_loader)))
 
+
 class LeNet(nn.Module):
     def __init__(self):
         super(LeNet, self).__init__()
