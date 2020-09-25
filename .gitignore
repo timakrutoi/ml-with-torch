@@ -9,7 +9,7 @@ __pycache__/
 *.so
 
 # My changes
-MNIST/
+data/
 
 # Distribution / packaging
 .Python
