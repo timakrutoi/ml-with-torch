@@ -18,8 +18,6 @@ class net(nn.Module):
         # 28x28 24x24 12x12 8x8 5x5
         # 32x32 28x28 14x14 10x10 5x5
         self.conv1 = nn.Conv2d(3, 10, 5)
-        # 28x28 24x24 12x12 8x8 4x4
-        self.conv1 = nn.Conv2d(1, 32, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(10, 30, 5)
         self.lc = nn.Linear(5 * 5 * 30, 10)
