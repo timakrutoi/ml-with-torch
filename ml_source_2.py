@@ -5,6 +5,9 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 import numpy as np
 
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+
 from torch.autograd import Variable
 from torchvision.datasets import CIFAR10
 
@@ -15,14 +18,9 @@ class net(nn.Module):
         super(net, self).__init__()
 
         # 1. Dummy
-<<<<<<< HEAD
-        # 28x28 24x24 12x12 8x8 5x5
+        # 28x28 24x24 12x12 8x8 4x4
         # 32x32 28x28 14x14 10x10 5x5
         self.conv1 = nn.Conv2d(3, 10, 5)
-=======
-        # 28x28 24x24 12x12 8x8 4x4
-        self.conv1 = nn.Conv2d(1, 32, 5)
->>>>>>> a8b3ef828924e15f1470d98cc93cc52fbf5b24a9
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(10, 30, 5)
         self.lc = nn.Linear(5 * 5 * 30, 10)
@@ -32,18 +30,27 @@ class net(nn.Module):
         x = self.pool(F.relu(self.conv2(x)))
         x = x.view(-1, 5 * 5 * 30)
         x = self.lc(x)
+        # x = sigmoid_(x)
 
         return x
 
 
 if __name__ == "__main__":
 
+    print('Starting...')
+
     lr = 0.01  # learning rate
     momentum = 0.9
     batch_size = 100
 
     model = net()
-    criterion = nn.CrossEntropyLoss()  # loss
+    sigmoid_ = nn.Sigmoid()
+    criterion = nn.NLLLoss()  # loss
+    # CrossEntropyLoss
+    # CrossEntropyWithLogits
+    # NLLLoss
+    # BCELoss
+    # BCEWithLogitsLoss
     optimizer = optim.SGD(net.parameters(model), lr, momentum)  # optimizer
     # print(model)
 
@@ -74,13 +81,13 @@ if __name__ == "__main__":
             optimizer.zero_grad()
             x, target = Variable(x), Variable(target)
             # one hot encode
-            # CrossEntropyWithLogits
-            # NLL
-            # BCE
-            # BCEWithLogitsLoss
             # target = F.one_hot(target)  # works w/o this
 
             y = model(x)
+            # print('size y : {}  size target : {}'.format(y.size(), target.size()))
+            # print(sigmoid_(y).type())
+            # print(target)
+
             loss = criterion(y, target)  # loss
             loss.backward()
             optimizer.step()
@@ -92,20 +99,27 @@ if __name__ == "__main__":
         # Testing
         total_cnt = 0
         correct_cnt = 0
+        test_loss = 0
         for batch_idx, (x, target) in enumerate(test_loader):  # reading test data
             y = model(x)
-            predict = torch.max(y.data, 1)
+            # one_hot_target = F.one_hot(target)
+            # print('size y : {}  size target : {}'.format(y.size(), target.size()))
             loss = criterion(y, target)
 
+            test_loss += loss.item()
+            _, predict = y.max(1)
+            total_cnt += target.size(0)
+            correct_cnt += predict.eq(target).sum().item()
+
             # what
-            _, pred_label = torch.max(y.data, 1)
-            total_cnt += x.data.size()[0]
-            correct_cnt += (pred_label == target.data).sum()
+            # _, pred_label = torch.max(y.data, 1)
+            # total_cnt += x.data.size()[0]
+            # correct_cnt += (pred_label == target.data).sum()
 
             if batch_idx % 100 == 0:
                 print('==>>> epoch: {}, index: {}, acc: {:.2f}, correct: {}, total: {}'.format(
                     epoch, batch_idx, (correct_cnt * 1.) / total_cnt, correct_cnt, total_cnt))
 
-    torch.save(model.state_dict(), "my-model")
+    # torch.save(model.state_dict(), 'model.pt', _use_new_zipfile_serialization=False)
 
     print("Done!")
