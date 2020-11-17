@@ -38,6 +38,21 @@ class net(nn.Module):
 if __name__ == "__main__":
 
     print('Starting...')
+    print('Choose loss function: ')
+    choice = input()
+    if choice.upper() == 'CrossEntropyLoss'.upper():
+        criterion = nn.CrossEntropyLoss()
+    elif choice.upper() == 'BCELoss'.upper():
+        criterion = nn.BCELoss()
+    elif choice.upper() == 'BCEWithLogitsLoss'.upper():
+        criterion = nn.BCEWithLogitsLoss()
+    elif choice.upper() == 'NLLLoss'.upper():
+        criterion = nn.NLLLoss()
+    else:
+        choice = 'CrossEntropyLoss'
+        criterion = nn.CrossEntropyLoss()
+
+    print('Chosen function is {}'.format(choice))
 
     lr = 0.01  # learning rate
     momentum = 0.9
@@ -45,12 +60,13 @@ if __name__ == "__main__":
 
     model = net()
     sigmoid_ = nn.Sigmoid()
-    criterion = nn.NLLLoss()  # loss
+    # criterion = nn.NLLLoss()  # loss
     # CrossEntropyLoss
     # CrossEntropyWithLogits
     # NLLLoss
     # BCELoss
     # BCEWithLogitsLoss
+
     optimizer = optim.SGD(net.parameters(model), lr, momentum)  # optimizer
     # print(model)
 
@@ -85,10 +101,12 @@ if __name__ == "__main__":
 
             y = model(x)
             # print('size y : {}  size target : {}'.format(y.size(), target.size()))
-            # print(sigmoid_(y).type())
-            # print(target)
+            if choice.upper() == 'BCELoss'.upper() or choice.upper() == 'BCEWithLogitsLoss'.upper():
+                target = F.one_hot(target)
+                loss = criterion(sigmoid_(y), target.float())
+            else:
+                loss = criterion(y, target)  # loss
 
-            loss = criterion(y, target)  # loss
             loss.backward()
             optimizer.step()
 
@@ -104,17 +122,10 @@ if __name__ == "__main__":
             y = model(x)
             # one_hot_target = F.one_hot(target)
             # print('size y : {}  size target : {}'.format(y.size(), target.size()))
-            loss = criterion(y, target)
 
-            test_loss += loss.item()
             _, predict = y.max(1)
             total_cnt += target.size(0)
             correct_cnt += predict.eq(target).sum().item()
-
-            # what
-            # _, pred_label = torch.max(y.data, 1)
-            # total_cnt += x.data.size()[0]
-            # correct_cnt += (pred_label == target.data).sum()
 
             if batch_idx % 100 == 0:
                 print('==>>> epoch: {}, index: {}, acc: {:.2f}, correct: {}, total: {}'.format(
