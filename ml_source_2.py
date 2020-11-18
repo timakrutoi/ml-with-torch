@@ -3,10 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torchvision.transforms as transforms
-import numpy as np
 
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+import argparse
 
 from torch.autograd import Variable
 from torchvision.datasets import CIFAR10
@@ -35,24 +33,49 @@ class net(nn.Module):
         return x
 
 
+def BCELossWrapper(f):
+    def wrapper(output, target):
+        f(sigmoid_(output), F.one_hot(target).float())
+
+    return wrapper
+
+
+def BCEWithLogitsLossWrapper(f):
+    def wrapper(output, target):
+        target = F.one_hot(target)
+        f(output, target.float())
+
+    return wrapper
+
+
+def NLLLossWrapper(f):
+    def wrapper(output, target):
+        f(nn.functional.log_softmax(output, dim=1), target)
+
+    return wrapper
+
+
+losses = {
+    'CrossEntropyLoss': nn.CrossEntropyLoss(),
+    'BCELoss': BCELossWrapper(nn.BCELoss()),
+    'BCEWithLogitsLoss': BCEWithLogitsLossWrapper(nn.BCEWithLogitsLoss()),
+    'NLLLoss': NLLLossWrapper(nn.NLLLoss())
+}
+
+
+class LossFactory():
+    def __call__(self, loss_type='CrossEntropyLoss'):
+        return losses[loss_type]
+
+
 if __name__ == "__main__":
 
-    print('Starting...')
-    print('Choose loss function: ')
-    choice = input()
-    if choice.upper() == 'CrossEntropyLoss'.upper():
-        criterion = nn.CrossEntropyLoss()
-    elif choice.upper() == 'BCELoss'.upper():
-        criterion = nn.BCELoss()
-    elif choice.upper() == 'BCEWithLogitsLoss'.upper():
-        criterion = nn.BCEWithLogitsLoss()
-    elif choice.upper() == 'NLLLoss'.upper():
-        criterion = nn.NLLLoss()
-    else:
-        choice = 'CrossEntropyLoss'
-        criterion = nn.CrossEntropyLoss()
+    parser = argparse.ArgumentParser(description='loss function selection')
+    parser.add_argument('-a', action='store', dest='loss_type', default='CrossEntropyLoss')
+    args = parser.parse_args()
 
-    print('Chosen function is {}'.format(choice))
+    print('Starting...')
+    print('Selected loss function: {}'.format(args.loss_type))
 
     lr = 0.01  # learning rate
     momentum = 0.9
@@ -60,20 +83,11 @@ if __name__ == "__main__":
 
     model = net()
     sigmoid_ = nn.Sigmoid()
-    # criterion = nn.NLLLoss()  # loss
-    # CrossEntropyLoss
-    # CrossEntropyWithLogits
-    # NLLLoss
-    # BCELoss
-    # BCEWithLogitsLoss
+    criterion = LossFactory()(args.loss_type)
 
     optimizer = optim.SGD(net.parameters(model), lr, momentum)  # optimizer
-    # print(model)
 
     trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,))])
-
-    # train_set = MNIST(root='./data', train=True, download=True, transform=trans)
-    # test_set = MNIST(root='./data', train=False, download=True, transform=trans)
 
     train_set = CIFAR10(root='./data', train=True, download=True, transform=trans)
     test_set = CIFAR10(root='./data', train=False, download=True, transform=trans)
@@ -101,11 +115,7 @@ if __name__ == "__main__":
 
             y = model(x)
             # print('size y : {}  size target : {}'.format(y.size(), target.size()))
-            if choice.upper() == 'BCELoss'.upper() or choice.upper() == 'BCEWithLogitsLoss'.upper():
-                target = F.one_hot(target)
-                loss = criterion(sigmoid_(y), target.float())
-            else:
-                loss = criterion(y, target)  # loss
+            loss = criterion(y, target)
 
             loss.backward()
             optimizer.step()
