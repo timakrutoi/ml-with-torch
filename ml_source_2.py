@@ -35,22 +35,21 @@ class net(nn.Module):
 
 def BCELossWrapper(f):
     def wrapper(output, target):
-        f(sigmoid_(output), F.one_hot(target).float())
+        return f(sigmoid_(output), F.one_hot(target).float())
 
     return wrapper
 
 
 def BCEWithLogitsLossWrapper(f):
     def wrapper(output, target):
-        target = F.one_hot(target)
-        f(output, target.float())
+        return f(output, F.one_hot(target).float())
 
     return wrapper
 
 
 def NLLLossWrapper(f):
     def wrapper(output, target):
-        f(nn.functional.log_softmax(output, dim=1), target)
+        return f(nn.functional.log_softmax(output, dim=1), target)
 
     return wrapper
 
