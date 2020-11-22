@@ -5,6 +5,8 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 
 import argparse
+from tqdm import tqdm
+from torch.utils.tensorboard import SummaryWriter
 
 from torch.autograd import Variable
 from torchvision.datasets import CIFAR10
@@ -84,6 +86,8 @@ if __name__ == "__main__":
     sigmoid_ = nn.Sigmoid()
     criterion = LossFactory()(args.loss_type)
 
+    writer = SummaryWriter()  # tensorboard
+
     optimizer = optim.SGD(net.parameters(model), lr, momentum)  # optimizer
 
     trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,))])
@@ -106,7 +110,8 @@ if __name__ == "__main__":
     print('==>>> total testing batch number: {}'.format(len(test_loader)))
 
     for epoch in range(10):
-        for batch_idx, (x, target) in enumerate(train_loader):  # reading train data
+        train_iterator = tqdm(train_loader, ncols=100, desc='Epoch: {}, training'.format(epoch))
+        for batch_idx, (x, target) in enumerate(train_iterator):  # reading train data
             optimizer.zero_grad()
             x, target = Variable(x), Variable(target)
             # one hot encode
@@ -119,26 +124,28 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
 
-            if batch_idx % 100 == 0 and 0:
-                print('==>>> epoch: {}, index: {}'.format(epoch, batch_idx))
-
         # ==================================================================
         # Testing
         total_cnt = 0
         correct_cnt = 0
         test_loss = 0
-        for batch_idx, (x, target) in enumerate(test_loader):  # reading test data
-            y = model(x)
-            # one_hot_target = F.one_hot(target)
-            # print('size y : {}  size target : {}'.format(y.size(), target.size()))
+        batch_idx = 0
+        acc = 0
+        test_iterator = tqdm(test_loader, ncols=100,
+                             desc='Epoch: {}, acc: {}, loss: {}, training'.format(epoch, acc, test_loss/(batch_idx+1)))
 
+        for batch_idx, (x, target) in enumerate(test_iterator):  # reading test data
+            y = model(x)
+            loss = criterion(y, target)
+
+            test_loss += loss.item()
             _, predict = y.max(1)
             total_cnt += target.size(0)
             correct_cnt += predict.eq(target).sum().item()
-
-            if batch_idx % 100 == 0:
-                print('==>>> epoch: {}, index: {}, acc: {:.2f}, correct: {}, total: {}'.format(
-                    epoch, batch_idx, (correct_cnt * 1.) / total_cnt, correct_cnt, total_cnt))
+            acc = (correct_cnt * 1.) / total_cnt
+            test_iterator.desc = 'Epoch: {}, acc: {:.3f}, loss: {:.3f}, training'.format(epoch, acc, test_loss/(batch_idx+1))
+            writer.add_scalar('Acc(test)', acc, batch_idx)
+            writer.add_scalar('Loss(test)', test_loss, batch_idx)
 
     # torch.save(model.state_dict(), 'model.pt', _use_new_zipfile_serialization=False)
 
