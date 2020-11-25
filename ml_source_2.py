@@ -18,7 +18,6 @@ class net(nn.Module):
         super(net, self).__init__()
 
         # 1. Dummy
-        # 28x28 24x24 12x12 8x8 4x4
         # 32x32 28x28 14x14 10x10 5x5
         self.conv1 = nn.Conv2d(3, 10, 5)
         self.pool = nn.MaxPool2d(2, 2)
@@ -30,7 +29,6 @@ class net(nn.Module):
         x = self.pool(F.relu(self.conv2(x)))
         x = x.view(-1, 5 * 5 * 30)
         x = self.lc(x)
-        # x = sigmoid_(x)
 
         return x
 
@@ -70,6 +68,10 @@ class LossFactory():
 
 
 if __name__ == "__main__":
+
+    classes = [
+        'airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck'
+    ]
 
     parser = argparse.ArgumentParser(description='loss function selection')
     parser.add_argument('-a', action='store', dest='loss_type', default='CrossEntropyLoss')
@@ -114,11 +116,8 @@ if __name__ == "__main__":
         for batch_idx, (x, target) in enumerate(train_iterator):  # reading train data
             optimizer.zero_grad()
             x, target = Variable(x), Variable(target)
-            # one hot encode
-            # target = F.one_hot(target)  # works w/o this
 
             y = model(x)
-            # print('size y : {}  size target : {}'.format(y.size(), target.size()))
             loss = criterion(y, target)
 
             loss.backward()
@@ -132,7 +131,7 @@ if __name__ == "__main__":
         batch_idx = 0
         acc = 0
         test_iterator = tqdm(test_loader, ncols=100,
-                             desc='Epoch: {}, acc: {}, loss: {}, training'.format(epoch, acc, test_loss/(batch_idx+1)))
+                             desc='Epoch {}, acc: {}, loss: {}, training'.format(epoch, acc, test_loss/(batch_idx+1)))
 
         for batch_idx, (x, target) in enumerate(test_iterator):  # reading test data
             y = model(x)
@@ -143,10 +142,16 @@ if __name__ == "__main__":
             total_cnt += target.size(0)
             correct_cnt += predict.eq(target).sum().item()
             acc = (correct_cnt * 1.) / total_cnt
-            test_iterator.desc = 'Epoch: {}, acc: {:.3f}, loss: {:.3f}, training'.format(epoch, acc, test_loss/(batch_idx+1))
-            writer.add_scalar('Acc(test)', acc, batch_idx)
-            writer.add_scalar('Loss(test)', test_loss, batch_idx)
+            test_iterator.desc = 'Epoch {}, acc: {:.3f}, loss: {:.3f}, training'.format(
+                epoch, acc, test_loss/(batch_idx + 1))
+
+            writer.add_scalar('Acc(test)', acc, batch_idx + (epoch * 100))
+            writer.add_scalar('Loss(test)', test_loss, batch_idx + (epoch * 100))
+            if batch_idx < 10:
+                writer.add_image('Epoch {} :Testing image - label {} : {}'.format(
+                    epoch, classes[predict[batch_idx]], classes[target[batch_idx]]), x[batch_idx], 0)
 
     # torch.save(model.state_dict(), 'model.pt', _use_new_zipfile_serialization=False)
+    writer.close()
 
     print("Done!")
