@@ -11,6 +11,8 @@ from torch.utils.tensorboard import SummaryWriter
 from torch.autograd import Variable
 from torchvision.datasets import CIFAR10
 
+import numpy as np
+
 
 class net(nn.Module):
 
@@ -150,13 +152,14 @@ if __name__ == "__main__":
             writer.add_scalar('Acc(test)', acc, batch_idx + (epoch * 100))
             writer.add_scalar('Loss(test)', test_loss, batch_idx + (epoch * 100))
 
-            if 10 * (epoch - 1) < batch_idx < 10 * epoch:
+            if batch_idx < 10:
+                #  10 * (epoch - 1) < batch_idx < 10 * epoch:
                 writer.add_image('Epoch {} :Testing image - label {} : {}'.format(
                     epoch, classes[predict[batch_idx]], classes[target[batch_idx]]), x[batch_idx] + 0.5, 0)
 
         test_iterator.close()
 
-    # torch.save(model.state_dict(), 'model.pt', _use_new_zipfile_serialization=False)
+    torch.save(model.state_dict(), 'model(try2).pt')
     writer.close()
 
     print("Done!")
