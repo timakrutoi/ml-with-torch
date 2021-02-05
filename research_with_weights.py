@@ -100,11 +100,11 @@ if __name__ == '__main__':
 
     it.close()
 
-    with open('research\\research_right_acc_data.txt', 'w') as out_file:
+    with open('research\\research_acc_data.txt', 'w') as out_file:
         for i in result_list:
             out_file.write('{}\n'.format(i[0]))
 
-    with open('research\\research_right_loss_data.txt', 'w') as out_file:
+    with open('research\\research_loss_data.txt', 'w') as out_file:
         for i in result_list:
             out_file.write('{}\n'.format(i[1]))
 
