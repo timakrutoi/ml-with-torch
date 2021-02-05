@@ -53,11 +53,11 @@ if __name__ == '__main__':
         shuffle=False)
 
     model1 = net()
-    model1.load_state_dict(torch.load('model(try1).pt'))
+    model1.load_state_dict(torch.load('calculated models\\model(try1).pt'))
     model1.eval()
 
     model2 = net()
-    model2.load_state_dict(torch.load('model(try2).pt'))
+    model2.load_state_dict(torch.load('calculated models\\model(try2).pt'))
     model2.eval()
 
     conv1_model1 = model1.conv1.weight
@@ -80,11 +80,11 @@ if __name__ == '__main__':
     print('All steps have been found!')
 
     result_list = [(0, 0)]
-    test_conv1 = conv1_model1
-    test_conv2 = conv2_model1
-    test_lc = lc_model1
+    test_conv1 = conv1_model1 - (conv1_steps * num_iterations)
+    test_conv2 = conv2_model1 - (conv2_steps * num_iterations)
+    test_lc = lc_model1 - (lc_steps * num_iterations)
 
-    it = tqdm(range(num_iterations + 1), ncols=140)
+    it = tqdm(range(3 * num_iterations), ncols=140)
 
     for i in enumerate(it):
         # applying changes
@@ -100,11 +100,11 @@ if __name__ == '__main__':
 
     it.close()
 
-    with open('research_acc_data.txt', 'w') as out_file:
+    with open('research\\research_right_acc_data.txt', 'w') as out_file:
         for i in result_list:
             out_file.write('{}\n'.format(i[0]))
 
-    with open('research_loss_data.txt', 'w') as out_file:
+    with open('research\\research_right_loss_data.txt', 'w') as out_file:
         for i in result_list:
             out_file.write('{}\n'.format(i[1]))
 

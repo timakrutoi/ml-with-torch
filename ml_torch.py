@@ -159,7 +159,7 @@ if __name__ == "__main__":
 
         test_iterator.close()
 
-    torch.save(model.state_dict(), 'model(try2).pt')
+    torch.save(model.state_dict(), 'calculated models\\model(try2).pt')
     writer.close()
 
     print("Done!")
