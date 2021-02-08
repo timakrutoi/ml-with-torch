@@ -72,6 +72,7 @@ class LossFactory():
 if __name__ == "__main__":
 
     # tensorboard --logdir=runs
+    try_number = 4
 
     classes = [
         'airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck'
@@ -105,12 +106,14 @@ if __name__ == "__main__":
     train_loader = torch.utils.data.DataLoader(
         dataset=train_set,
         batch_size=batch_size,
-        shuffle=True)
+        shuffle=True
+    )
 
     test_loader = torch.utils.data.DataLoader(
         dataset=test_set,
         batch_size=batch_size,
-        shuffle=False)
+        shuffle=False
+    )
 
     print('==>>> total training batch number: {}'.format(len(train_loader)))
     print('==>>> total testing batch number: {}'.format(len(test_loader)))
@@ -159,7 +162,7 @@ if __name__ == "__main__":
 
         test_iterator.close()
 
-    torch.save(model.state_dict(), 'calculated models\\model(try2).pt')
+    torch.save(model.state_dict(), 'calculated models\\model(try{}).pt'.format(try_number))
     writer.close()
 
     print("Done!")
